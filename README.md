@@ -46,7 +46,7 @@ python pip install pymongo
 
 In the script or module where you handle the scraping and data extraction, import the pymongo With the MongoDB integration, you can easily query and retrieve the scraped data from the database, perform analytics, or use it for other purposes.
 
-# Here's the task distribution organized into bullet points under each name:
+# Task distribution:
 **Kruthi:**
 - MongoDB integration.
 - Integration of Flask application.
