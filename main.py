@@ -102,8 +102,7 @@ if __name__ == '__main__':
 
         # Use the default URL if the user didn't provide one
         if not base_url:
-            #base_url = "https://www.amazon.it/s?rh=n%3A20904366031&fs=true&ref=lp_20904366031_sar"
-            base_url="https://www.amazon.it/s?k=cosmetics&ref=nb_sb_noss"
+            base_url = "https://www.amazon.it/s?rh=n%3A20904366031&fs=true&ref=lp_20904366031_sar"
 
         print("The base url is ",base_url)
 
