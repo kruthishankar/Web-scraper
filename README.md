@@ -7,6 +7,7 @@ Welcome to WebScraper, is an interactive web scraper solution designed to extrac
 Installing a virtual environment first, then the prerequisites, is always a smart idea:
 
 python.exe -m venv environmentname
+
 source environmentname/bin/activate
 
 # Install necessary requirements:
