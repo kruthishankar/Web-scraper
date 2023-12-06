@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Scraper Frontend</title>
+
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+    <style>
+        /* Add your custom styles here */
+
+        body {
+            background-color: #f8f9fa; /* Light gray background */
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .loading {
+            display: none;
+            color: #6c757d; /* Dark gray text color */
+        }
+
+        #resultSection {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .btn-purple {
+            background-color: #6f42c1; /* Purple background color */
+            color: #ffffff; /* White text color */
+        }
+
+        .btn-purple:hover {
+            background-color: #553a87; /* Darker purple background color on hover */
+        }
+
+        .form-control-purple {
+            border-color: #6f42c1; /* Purple border color */
+        }
+
+        /* Additional styling for tables */
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #6f42c1; /* Purple border for table cells */
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #6f42c1; /* Purple background for table header */
+            color: #ffffff; /* White text color for table header */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-group">
+            <label for="urlInput">Enter URL:</label>
+            <div class="input-group">
+                <input type="text" class="form-control form-control-purple" id="urlInput" placeholder="Enter URL">
+                <div class="input-group-append">
+                    <button class="btn btn-purple" onclick="scrapeData()">Scrape</button>
+                </div>
+            </div>
+            <small id="loading" class="loading">Scraping in progress...</small>
+        </div>
+
+        <div id="resultSection">
+            <div class="form-group">
+                <label for="queryDropdown">Select Query:</label>
+                <select class="form-control form-control-purple" id="queryDropdown" onchange="handleQueryOption()">
+                    <option value="query0">Select your query</option>
+                    <option value="query1">Search products between price range x and y</option>
+                    <option value="query2">Search by name and description</option>
+                    <option value="query3">Search by rating grater than equal to x and order them in descending</option>
+                    <option value="query4">Search highest in stock values and order them by the product count in descending order</option>
+                </select>
+            </div>
+
+            <div id="inputSection" style="display: none;">
+                <!-- Input boxes will be dynamically added here based on the selected option -->
+            </div>
+
+            <button class="btn btn-purple" onclick="runQuery()">Evaluate</button>
+            <div id="mongoQueryResult"></div>
+            <div id="mysqlQueryResult"></div>
+            
+            <!-- Optionally, if you want to use the table1 and table2 divs for showing the results, make sure they are visible -->
+            <div id="table1" style="display: none;">
+                <h2>Table 1</h2>
+                <!-- Display CSV data as a table here -->
+            </div>
+            
+            <div id="table2" style="display: none;">
+                <h2>Table 2</h2>
+                <!-- Display CSV data as a table here -->
+            </div>
+
+            
+        </div>
+    </div>
+
+    <!-- Include Bootstrap JS and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+        function scrapeData() {
+            // Implement logic to send the input URL to the backend for scraping
+            // Display loading message while scraping is in progress
+            document.getElementById("loading").style.display = "inline";
+            
+            // Assume there's a function called fetchDataFromBackend(url) that fetches data from the backend
+            fetchDataFromBackend(document.getElementById("urlInput").value)
+                .then(() => {
+                    // Hide loading message and display result section
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("resultSection").style.display = "block";
+                })
+                .catch(error => {
+                    console.error(error);
+                    // Handle error and update UI accordingly
+                    document.getElementById("loading").innerHTML = "Error occurred while scraping.";
+                });
+        }
+
+
+    function runQuery() {
+    // Get the selected query and input values
+    function buildTableHtml(resultData) {
+        let tableHtml = "<table class='table'><thead><tr>";
+        // Define headers
+        const headers = ['Indexing Type', 'Columns', 'Execution Time(s)', 'Rows Returned', 'Space Utilization'];
+        // Add headers to the table
+        headers.forEach(header => {
+            tableHtml += `<th>${header}</th>`;
+        });
+        tableHtml += "</tr></thead><tbody>";
+        // Add data rows
+        resultData.forEach(row => {
+            tableHtml += "<tr>";
+            row.forEach((cell, index) => {
+                // Check if the cell is a number, format it to ensure a consistent number of decimal places if it's a float
+                if (typeof cell === 'number' && !Number.isInteger(cell)) {
+                    tableHtml += `<td>${cell.toFixed(5)}</td>`;
+                } else {
+                    tableHtml += `<td>${cell}</td>`;
+                }
+            });
+            tableHtml += "</tr>";
+        });
+        tableHtml += "</tbody></table>";
+        return tableHtml;
+    }
+    var selectedQuery = document.getElementById("queryDropdown").value;
+    var inputValues = getInputValues();
+
+    // Make a POST request to the backend
+    fetch('/evaluateQuery', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: selectedQuery, parameters: inputValues }),
+    })
+    .then(response => {
+        // Check if the response is ok
+        if (!response.ok) {
+            throw new Error('Network response was not ok: ' + response.statusText);
+        }
+        return response.json();
+    })
+    .then(data => {
+    console.log('Response data:', data); // Log the response data
+    const mongoQueryResultElement = document.getElementById("mongoQueryResult");
+    const mysqlQueryResultElement = document.getElementById("mysqlQueryResult");
+
+    // Set MongoDB results and table (or no data message) only once
+    if (!mongoQueryResultElement) {
+        console.error("No element found with ID 'mongoQueryResult'");
+    } else {
+        mongoQueryResultElement.innerHTML = "<h3>MongoDB Results</h3>" +
+            (data.mongoData && data.mongoData.length > 0 ? buildTableHtml(data.mongoData) : "<p>No MongoDB data to display.</p>");
+    }
+
+    // Set SQL Database results and table (or no data message) only once
+    if (!mysqlQueryResultElement) {
+        console.error("No element found with ID 'mysqlQueryResult'");
+    } else {
+        mysqlQueryResultElement.innerHTML = "<h3>SQL Database Results</h3>" +
+            (data.mysqlData && data.mysqlData.length > 0 ? buildTableHtml(data.mysqlData) : "<p>No SQL Database data to display.</p>");
+    }
+
+    // Show the result section if hidden
+    document.getElementById("resultSection").style.display = "block";
+})
+.catch(error => {
+    console.error('Error:', error); // Log any errors
+    document.getElementById("queryResult").textContent = "An error occurred while running the query: " + error.message;
+});
+
+}
+
+
+    // Function to get input values based on the selected query
+    function getInputValues() {
+        var selectedQuery = document.getElementById("queryDropdown").value;
+        var inputValues = {};
+
+        // Get input values based on the selected query
+        if (selectedQuery === "query1") {
+            inputValues.lowerBound = document.getElementById("lowerBound").value;
+            inputValues.upperBound = document.getElementById("upperBound").value;
+        } else if (selectedQuery === "query2") {
+            inputValues.stringValue = document.getElementById("stringValue").value;
+        } else if (selectedQuery === "query3" || selectedQuery === "query4") {
+            inputValues.numericValue = document.getElementById("numericValue").value;
+        }
+
+        return inputValues;
+    }
+        function fetchDataFromBackend(data) {
+            // Replace this with actual code to send data to the backend and get the result
+            // Use fetch, XMLHttpRequest, or another method to make an HTTP request
+            // For simplicity, this function just returns a resolved promise with a dummy value
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve("dummy CSV data");
+                }, 2000); // Simulating a delay for demonstration purposes
+            });
+        }
+        // Function to handle changes in the selected query option
+        function handleQueryOption() {
+            // Get the selected option
+            var selectedOption = document.getElementById("queryDropdown").value;
+
+            // Get the container where input boxes will be added
+            var inputSection = document.getElementById("inputSection");
+
+            // Remove existing input boxes
+            inputSection.innerHTML = "";
+
+            // Dynamically add input boxes based on the selected option
+            if (selectedOption === "query1") {
+                // For Query 1, add two numerical input boxes (lower bound and upper bound)
+                inputSection.innerHTML = `
+                    <label for="lowerBound">Lower Bound:</label>
+                    <input type="number" class="form-control form-control-purple" id="lowerBound">
+                    <label for="upperBound">Upper Bound:</label>
+                    <input type="number" class="form-control form-control-purple" id="upperBound">
+                `;
+            } else if (selectedOption === "query2") {
+                // For Query 2, add one input box accepting a string
+                inputSection.innerHTML = `
+                    <label for="stringValue">Enter String:</label>
+                    <input type="text" class="form-control form-control-purple" id="stringValue">
+                `;
+            } else if (selectedOption === "query3" || selectedOption === "query4") {
+                // For Query 3 and Query 4, add one input box accepting a number
+                inputSection.innerHTML = `
+                    <label for="numericValue">Enter Number:</label>
+                    <input type="number" class="form-control form-control-purple" id="numericValue">
+                `;
+            }
+
+            // Display the input section
+            inputSection.style.display = "block";
+        }
+
+        // ... (Other JavaScript code remains unchanged)
+    </script>
+</body>
+</html>
