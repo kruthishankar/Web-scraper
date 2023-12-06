@@ -3,7 +3,7 @@
 Welcome to WebScraper, is an interactive web scraper solution designed to extract information from the Amazon website and store it in a MongoDB databse and MySQL databases. The code for the scraper, which automates the scraping process by using the Requests and BeautifulSoup libraries, is contained in this repository. Asyncio concurrency is another tool the scraper uses to effectively retrieve thousands of data points from the website. This project is an attempt to understand the relational and non-relational database systems and their indexing techniques. There is also an analysis of their efficiency based on their performances. 
 
 
-# Install necessary requirments:
+# Virtual environment:
 Installing a virtual environment first, then the prerequisites, is always a smart idea:
 
 python.exe -m venv environmentname
