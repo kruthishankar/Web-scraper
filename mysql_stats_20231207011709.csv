@@ -1,0 +1,11 @@
+SELECT * FROM amazon_sql WHERE Price BETWEEN 10.0 AND 200.0;, , , , 
+Indexing Type,Columns,Execution Time (s),Rows Returned,Space Utilization
+Base,N/A,0.0006279945373535156,755,5604.0
+Individual,Name,4.673004150390625e-05,755,6316.0
+Individual,Description,3.719329833984375e-05,755,11220.0
+Individual,Price,2.9087066650390625e-05,755,11292.0
+Individual,Rating,2.9087066650390625e-05,755,11356.0
+Individual,Availability,2.5033950805664062e-05,755,11448.0
+Complex,"('Name', 'Description')",3.0994415283203125e-05,755,17548.0
+Complex,"('Price', 'Rating')",2.5987625122070312e-05,755,17640.0
+Complex,"('Availability', 'Store')",2.5987625122070312e-05,755,17840.0

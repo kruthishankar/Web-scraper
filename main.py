@@ -7,7 +7,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 import sqlite3
 import csv
-from mysql_database.mysql import createTable, runQueries, process_query_frontend
+from sqllite_database.sqllite import createTable, runQueries, process_query_frontend
 import os
 import glob
 
